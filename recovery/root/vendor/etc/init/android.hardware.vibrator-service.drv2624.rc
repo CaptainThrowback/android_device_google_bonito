@@ -1,0 +1,64 @@
+on init
+    # This allows the ledtrig-transient properties to be created here so
+    # that they can be chown'd to system:system later on boot
+    write /sys/class/leds/vibrator/trigger "transient"
+
+on early-boot
+    # Permission for Vibrator
+    chown system system /sys/class/leds/vibrator/device/mode
+    chown system system /sys/class/leds/vibrator/device/od_clamp
+    chown system system /sys/class/leds/vibrator/device/rtp_input
+    chown system system /sys/class/leds/vibrator/device/scale
+    chown system system /sys/class/leds/vibrator/device/set_sequencer
+    chown system system /sys/class/leds/vibrator/device/autocal_result
+    chown system system /sys/class/leds/vibrator/device/ctrl_loop
+    chown system system /sys/class/leds/vibrator/device/ol_lra_period
+    chown system system /sys/class/leds/vibrator/device/autocal
+    chown system system /sys/class/leds/vibrator/device/lp_trigger_effect
+    chown system system /sys/class/leds/vibrator/device/lra_wave_shape
+
+on boot
+    chown system system /sys/class/leds/vibrator/trigger
+    chown system system /sys/class/leds/vibrator/activate
+    chown system system /sys/class/leds/vibrator/brightness
+    chown system system /sys/class/leds/vibrator/duration
+    chown system system /sys/class/leds/vibrator/state
+    chown system system /sys/class/timed_output/vibrator/enable
+
+    start vendor.vibrator.drv2624
+
+service vendor.vibrator.drv2624 /system/bin/android.hardware.vibrator-service.drv2624
+    class hal
+    user root
+    group root
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib:/system/lib64:/system/lib:/sbin
+
+    setenv PROPERTY_PREFIX ro.vibrator.hal.
+    setenv CALIBRATION_FILEPATH /persist/haptics/drv2624.cal
+
+    setenv F0_FILEPATH /sys/class/leds/vibrator/device/f0_stored
+    setenv REDC_FILEPATH /sys/class/leds/vibrator/device/redc_stored
+    setenv Q_FILEPATH /sys/class/leds/vibrator/device/q_stored
+    setenv ACTIVATE_PATH /sys/class/leds/vibrator/activate
+    setenv DURATION_PATH /sys/class/leds/vibrator/duration
+    setenv STATE_PATH /sys/class/leds/vibrator/state
+    setenv EFFECT_DURATION_PATH /sys/class/leds/vibrator/device/cp_trigger_duration
+    setenv EFFECT_INDEX_PATH /sys/class/leds/vibrator/device/cp_trigger_index
+    setenv EFFECT_QUEUE_PATH /sys/class/leds/vibrator/device/cp_trigger_queue
+    setenv EFFECT_SCALE_PATH /sys/class/leds/vibrator/device/cp_dig_scale
+    setenv GLOBAL_SCALE_PATH /sys/class/leds/vibrator/device/dig_scale
+    setenv ASP_ENABLE_PATH /sys/class/leds/vibrator/device/asp_enable
+    setenv GPIO_FALL_INDEX /sys/class/leds/vibrator/device/gpio1_fall_index
+    setenv GPIO_FALL_SCALE /sys/class/leds/vibrator/device/gpio1_fall_dig_scale
+    setenv GPIO_RISE_INDEX /sys/class/leds/vibrator/device/gpio1_rise_index
+    setenv GPIO_RISE_SCALE /sys/class/leds/vibrator/device/gpio1_rise_dig_scale
+
+    setenv HWAPI_PATH_PREFIX /sys/class/leds/vibrator/
+    setenv HWAPI_DEBUG_PATHS "
+        device/autocal
+        device/lp_trigger_effect
+        device/ol_lra_period
+        state
+        "
+    disabled
+    seclabel u:r:recovery:s0
