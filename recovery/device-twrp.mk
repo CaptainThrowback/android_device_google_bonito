@@ -1,4 +1,4 @@
-DEVICE_PATH := device/$(BOARD_VENDOR)/$(PRODUCT_RELEASE_NAME)
+DEVICE_PATH := device/$(BOARD_VENDOR)/$(COMMON_FOLDER)
 
 # Inherit from common AOSP config
 $(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)

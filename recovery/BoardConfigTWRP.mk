@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-DEVICE_PATH := device/$(BOARD_VENDOR)/$(PRODUCT_RELEASE_NAME)
+DEVICE_PATH := device/$(BOARD_VENDOR)/$(COMMON_FOLDER)
 
 # Copy TWRP ramdisk files automatically
 TARGET_RECOVERY_DEVICE_DIRS := $(DEVICE_PATH)
