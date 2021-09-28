@@ -23,6 +23,7 @@ PRODUCT_PLATFORM := sdm670
 
 include device/google/bonito/device-audio-mfg.mk
 include device/google/bonito/device.mk
+include device/google/bonito/recovery/device-twrp.mk
 
 # Bug 77867216
 PRODUCT_PROPERTY_OVERRIDES += audio.adm.buffering.ms=3

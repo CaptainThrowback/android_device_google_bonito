@@ -118,8 +118,6 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_ROOT_EXTRA_SYMLINKS := /mnt/vendor/persist:/persist
 BOARD_ROOT_EXTRA_SYMLINKS += /vendor/dsp:/dsp
 
-include device/google/bonito-sepolicy/bonito-sepolicy.mk
-
 TARGET_FS_CONFIG_GEN := device/google/bonito/config.fs
 
 QCOM_BOARD_PLATFORMS += sdm710
@@ -257,3 +255,5 @@ endif
 BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/b4s4-setup.sh
 
 -include vendor/google_devices/bonito/proprietary/BoardConfigVendor.mk
+
+-include device/google/bonito/recovery/BoardConfigTWRP.mk

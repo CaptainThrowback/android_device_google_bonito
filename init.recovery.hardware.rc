@@ -1,26 +1,67 @@
+import /init.recovery.qcom_decrypt.rc
+
+on init
+    # Don't lose recovery logs- keep warm reset for coming out of recovery.
+    write /sys/module/msm_poweroff/parameters/warm_reset 1
+
+    # Enable thermal mitigation
+    write /sys/devices/virtual/thermal/tz-by-name/backup-charge/mode enabled
+
+    # Create location for fs_mgr to store abbreviated output from filesystem
+    # checker programs.
+    mkdir /dev/fscklogs 0770 root system
+
+    # Determine fastboot boot status
+    start fastboot_boot_check
+
 on fs
     wait /dev/block/platform/soc/${ro.boot.bootdevice}
     symlink /dev/block/platform/soc/${ro.boot.bootdevice} /dev/block/bootdevice
 
-on init
-    mount configfs none /config
-    mkdir /config/usb_gadget/g1 0770 shell shell
-    write /config/usb_gadget/g1/idVendor 0x18d1
-    write /config/usb_gadget/g1/idProduct 0xd001
-    mkdir /config/usb_gadget/g1/strings/0x409 0770
-    write /config/usb_gadget/g1/strings/0x409/serialnumber ${ro.serialno}
-    write /config/usb_gadget/g1/strings/0x409/manufacturer ${ro.product.manufacturer}
-    write /config/usb_gadget/g1/strings/0x409/product ${ro.product.model}
-    mkdir /config/usb_gadget/g1/functions/ffs.adb
-    write /config/usb_gadget/g1/os_desc/use 1
-    setprop sys.usb.configfs 1
-    # Enable thermal mitigation
-    write /sys/devices/virtual/thermal/tz-by-name/backup-charge/mode enabled
+    # Set fscklog permission
+    chown root system /dev/fscklogs/log
+    chmod 0770 /dev/fscklogs/log
 
-on property:sys.usb.ffs.ready=1
-    mkdir /config/usb_gadget/g1/configs/b.1 0777 shell shell
-    symlink /config/usb_gadget/g1/configs/b.1 /config/usb_gadget/g1/os_desc/b.1
-    mkdir /config/usb_gadget/g1/configs/b.1/strings/0x409 0770 shell shell
-    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "adb"
-    symlink /config/usb_gadget/g1/functions/ffs.adb /config/usb_gadget/g1/configs/b.1/f1
-    write /config/usb_gadget/g1/UDC "a600000.dwc3"
+on boot
+    start health-hal-2-0
+
+on post-fs
+    start boot-hal-1-0
+
+on property:ro.boot.fastboot=1
+    # Load touch modules
+    insmod /vendor/lib/modules/synaptics_dsx_core.ko
+    insmod /vendor/lib/modules/synaptics_dsx_fw_update.ko
+    insmod /vendor/lib/modules/synaptics_dsx_rmi_dev.ko
+    insmod /vendor/lib/modules/synaptics_dsx_test_reporting.ko
+
+on property:ro.boot.dynamic_partitions=true && property:ro.boot.fastboot=0
+    wait /dev/block/bootdevice/by-name/vendor
+    start temp_mount
+
+on property:temp_mount.vendor_mounted=1
+    start load_modules
+
+on property:prepdecrypt.vendor_mounted=1
+    start load_modules
+
+service fastboot_boot_check /system/bin/fastboot_boot_check.sh
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+service load_modules /system/bin/load_modules.sh
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
+service temp_mount /system/bin/temp_mount.sh
+    user root
+    group root
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
